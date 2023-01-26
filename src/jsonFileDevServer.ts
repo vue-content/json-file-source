@@ -2,6 +2,8 @@ import { readFileSync, writeFileSync } from "fs";
 import { ViteDevServer, Plugin } from "vite";
 import dottie from 'dottie'
 import bodyParser from 'body-parser'
+import { IncomingMessage } from "connect";
+import { ServerResponse } from "http";
 
 interface Options {
 
@@ -12,7 +14,7 @@ interface Options {
   indentation?: number;
 }
 
-interface ParsedRequest extends Omit<Request, 'body'> {
+interface ParsedRequest extends Omit<IncomingMessage, 'body'> {
   body: string
 }
 
@@ -20,7 +22,7 @@ interface RouteArguments {
   options: Options;
   locale: string;
   req: ParsedRequest;
-  res: Response;
+  res: ServerResponse<IncomingMessage>;
   params: string[];
 }
 
@@ -33,6 +35,8 @@ interface RouteFunctions {
   patch?: RouteFunction;
 }
 
+const isRouteFunction = (fn: any): fn is RouteFunction => typeof fn === "function"
+
 export const jsonFileDevServer = (options: Options): Plugin => ({
   name: "configure-server",
   configureServer(server: ViteDevServer) {
@@ -43,14 +47,15 @@ export const jsonFileDevServer = (options: Options): Plugin => ({
         return next()
       }
       const [_, locale, route, ...params] = req.url.split("/");
-      const method = req.method.toLowerCase();
-      if (typeof routes[route]?.[method] === "function") {
-        const result = routes[route]?.[method]({
+      const method = req.method.toLowerCase() as keyof RouteFunctions;
+      const routeFunction = routes[route]?.[method]
+      if (isRouteFunction(routeFunction)) {
+        const result = routeFunction({
           locale,
           options,
           params,
           res,
-          req,
+          req: req as ParsedRequest,
         });
         if (typeof result === "string") {
           res.end(result);
