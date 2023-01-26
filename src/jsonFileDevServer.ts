@@ -12,10 +12,14 @@ interface Options {
   indentation?: number;
 }
 
+interface ParsedRequest extends Omit<Request, 'body'> {
+  body: string
+}
+
 interface RouteArguments {
   options: Options;
   locale: string;
-  req: Request;
+  req: ParsedRequest;
   res: Response;
   params: string[];
 }
@@ -35,6 +39,9 @@ export const jsonFileDevServer = (options: Options): Plugin => ({
     server.middlewares.use(bodyParser.json())
     server.middlewares.use("/vue-content", (req, res, next) => {
       // The complete route looks like /vue-content/:locale/:route/:param1/:param2/:param3
+      if (!req.url || !req.method) {
+        return next()
+      }
       const [_, locale, route, ...params] = req.url.split("/");
       const method = req.method.toLowerCase();
       if (typeof routes[route]?.[method] === "function") {
