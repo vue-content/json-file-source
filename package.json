@@ -3,19 +3,27 @@
   "private": false,
   "version": "0.0.0",
   "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "dist/main.js",
+  "module": "dist/main.js",
+  "types": "dist/main.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsup",
     "test": "vitest"
   },
   "peerDependencies": {
+    "@vue-content/core": "^0.0",
     "vue": "^3"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.2",
     "@types/dottie": "^2.0.4",
+    "@vue-content/core": "^0.0",
     "dottie": "^2.0.2",
+    "tsup": "^6.5.0",
     "typescript": "^4.9.3",
-    "vite": "^4.0.4",
     "vitest": "^0.25.8",
     "vue": "^3.2.45"
   },

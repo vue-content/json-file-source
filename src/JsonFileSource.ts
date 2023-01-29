@@ -1,6 +1,5 @@
-import { LocalizedInMemorySource } from '../../core/src/plugin/LocalizedInMemorySource'
 import { reactive } from 'vue'
-import { Block } from '../../core/src/plugin/Block'
+import { Block, LocalizedInMemorySource } from '@vue-content/core'
 
 interface JsonFileSourceOptions {
     locales: string[]
@@ -35,7 +34,7 @@ export class JsonFileSource extends LocalizedInMemorySource {
 
     override async fetchContent() {
         this.initialized.value = false
-        const module = await import(`../../samples/json-file-source/${this._path}/${this.locale}.json`)
+        const module = await import(`../${this._path}/${this.locale}.json`)
         this.content[this.locale] = module.default
         this.root = reactive(this.blockify(this.content[this.locale], "root"))
         this.initialized.value = true
