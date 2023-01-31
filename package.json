@@ -8,9 +8,21 @@
   ],
   "main": "dist/main.js",
   "module": "dist/main.js",
-  "types": "dist/main.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/main.js",
+      "require": "./dist/main.cjs",
+      "types": "./dist/main.d.ts"
+    },
+    "./vite-plugin": {
+      "import": "./dist/jsonFileDevServer.js",
+      "require": "./dist/jsonFileDevServer.cjs",
+      "types": "./dist/jsonFileDevServer.d.ts"
+    }
+  },
   "scripts": {
     "build": "tsup",
+    "build:watch": "tsup --watch",
     "test": "vitest"
   },
   "peerDependencies": {
@@ -20,7 +32,7 @@
   "devDependencies": {
     "@types/body-parser": "^1.19.2",
     "@types/dottie": "^2.0.4",
-    "@vue-content/core": "^0.0",
+    "@vue-content/core": "^0.0.1",
     "dottie": "^2.0.2",
     "tsup": "^6.5.0",
     "typescript": "^4.9.3",
@@ -29,5 +41,8 @@
   },
   "dependencies": {
     "body-parser": "^1.20.1"
-  }
+  },
+  "bundleDependencies": [
+    "body-parser"
+  ]
 }
