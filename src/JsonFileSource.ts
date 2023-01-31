@@ -2,22 +2,35 @@ import { reactive } from 'vue'
 import { Block, LocalizedInMemorySource } from '@vue-content/core'
 
 interface JsonFileSourceOptions {
-    locales: string[]
-    path: string
+    /**
+     * Set up where json-file-source should look for content files. Note that the files must follow the naming convention [locale].json. Typically you want to do it with import.meta.glob like this:
+     * 
+     * @example
+     * new JsonFileSource({
+     *   files: import.meta.glob('/content/*.json')
+     * }
+     */
+    files: Record<string, () => Promise<unknown>>
 }
 
+
 export class JsonFileSource extends LocalizedInMemorySource {
-    protected _locales: string[]
-    protected _path: string
+    protected files: Record<string, () => Promise<unknown>>
+    protected localePaths: Record<string, string> = {}
 
     constructor(options: JsonFileSourceOptions) {
       super({})
-      this._locales = options.locales
-      this._path = options.path
+      this.files = options.files
+      Object.keys(this.files).forEach(key => {
+        const match = key.match(/.*\/([^/]+).json$/)
+        if (match) {
+          this.localePaths[match[1]] = key
+        }
+      })
     }
 
     public get locales() {
-        return this._locales
+        return Object.keys(this.localePaths)
     }
 
     override async updateBlock(block: Block) {
@@ -34,7 +47,8 @@ export class JsonFileSource extends LocalizedInMemorySource {
 
     override async fetchContent() {
         this.initialized.value = false
-        const module = await import(`../${this._path}/${this.locale}.json`)
+        const path = this.localePaths[this.locale]
+        const module: any = await this.files[path]()
         this.content[this.locale] = module.default
         this.root = reactive(this.blockify(this.content[this.locale], "root"))
         this.initialized.value = true
